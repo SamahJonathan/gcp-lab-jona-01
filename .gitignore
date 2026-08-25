@@ -1,0 +1,14 @@
+# Terraform
+terraform.tfvars
+.terraform/
+*.tfstate
+*.tfstate.backup
+crash.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Credenciales
+*-key.json
+service-account*.json
