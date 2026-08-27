@@ -24,9 +24,33 @@ o PowerShell se come lo que va detras del punto.
 
 ## Estado
 
-- `terraform/` tiene la base escrita y validada: APIs, `vpc-lab` y `subred-us-east1`.
-- **Aun no se ha hecho `terraform apply`**: en GCP el proyecto esta vacio.
-- El repo git esta iniciado pero sin ningun commit ni remoto.
+Etapas 1 a 5 del `plan.md` hechas y verificadas en GCP:
+
+- **Etapa 1** — `terraform/main.tf` habilita 15 APIs. El `apply` esta hecho: el estado
+  tiene 15 `google_project_service`.
+- **Etapa 2** — service account `deployer-sa` con `roles/compute.viewer`, y solo ese.
+- **Etapa 3** — rol personalizado `vm_start_stop` con dos permisos:
+  `compute.instances.start` y `compute.instances.stop`.
+- **Etapa 4** — `terraform/network.tf`: VPC `vpc-lab` en modo CUSTOM y una sola subred,
+  `subred-us-east1` con `10.10.0.0/24`.
+- **Etapa 5** — regla de firewall `ssh-custom` en `vpc-lab`: ingress, `tcp:22`, origen
+  `0.0.0.0/0`, destino el network tag `web-server`. Creada con `gcloud`, no con
+  Terraform, asi que **no esta en el estado** y se borra con `gcloud`.
+
+Pendiente inmediato: la **etapa 6**, la primera VM. Los entregables ya estan escritos
+(`compute-engine/create-instance.sh` y `compute-engine/startup-script.sh`), pero el
+comando no se ha lanzado y en GCP todavia no hay ninguna maquina.
+
+Antes de dar por buena la etapa 6 hace falta una segunda regla de firewall,
+`http-custom`, que abra `tcp:80` al mismo tag: `ssh-custom` solo abre el 22 y el nginx
+no responderia desde el navegador. El comando esta al final de
+`scripts/etapa-05-firewall-network-tags.sh`.
+
+El repo tiene remoto `origin` en github.com/SamahJonathan/gcp-lab-jona-01 y varios commits.
+
+**A partir de la etapa 6 empieza el coste.** Hasta la 5 no hay en GCP ni un recurso que
+se facture: APIs, una identidad, un rol, una red y una regla de firewall son gratis. Una
+VM encendida no lo es, y su disco se sigue pagando aunque la pares.
 
 ## Convenciones
 
@@ -38,6 +62,9 @@ o PowerShell se come lo que va detras del punto.
   como cuaderno de copiar y pegar, no como script ejecutable.
 - Avisar del coste antes de crear recursos que no paran solos (clusteres, balanceadores,
   discos, VMs). El proyecto anterior se dejo un cluster GKE encendido una semana.
+- Mensajes de commit: una linea, formato `curso-NN: descripcion corta`. Con guion, no punto.
+  **Sin trailer `Co-Authored-By`**: es un repo de estudio personal y los primeros commits
+  no lo llevan.
 
 ## De donde viene esto
 
