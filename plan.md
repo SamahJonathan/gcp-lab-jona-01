@@ -76,7 +76,7 @@ Sin las tres, la casilla `[ ]` no se marca.
   - Comprobar: `gcloud compute networks describe vpc-lab --format="value(x_gcloud_subnet_mode)"` → `CUSTOM` (no `AUTO`)
   - Y: `gcloud compute networks subnets list --filter="network:vpc-lab"` → **1 sola** subred, `subred-us-east1`, `10.10.0.0/24`, `us-east1`
 
-- [ ] **5. Firewall + network tags** — `scripts/firewall-network-tags.sh`
+- [x] **5. Firewall + network tags** — `scripts/etapa-05-firewall-network-tags.sh`
   - Comprobar: `gcloud compute firewall-rules describe ssh-custom --format="value(targetTags,allowed,direction)"`
   - Esperado: `web-server`, `tcp:22`, `INGRESS`
 
