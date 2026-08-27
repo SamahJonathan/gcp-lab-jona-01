@@ -64,15 +64,15 @@ Sin las tres, la casilla `[ ]` no se marca.
   - Esperado: **≥ 10 APIs**, entre ellas `compute`, `container`, `run`, `bigquery`, `sqladmin`, `logging`, `monitoring`
   - Además: `terraform -chdir=terraform state list` lista un `google_project_service` por API
 
-- [ ] **2. Service account + IAM** — `scripts/setup-iam.sh`
+- [x] **2. Service account + IAM** — `scripts/etapa-02-service-account-iam.sh`
   - Comprobar: `gcloud iam service-accounts list --filter="email:deployer-sa"` → 1 fila
   - Y el binding: `gcloud projects get-iam-policy gcp-lab-jona-01 --flatten="bindings[].members" --filter="bindings.members:deployer-sa" --format="value(bindings.role)"` → `roles/compute.viewer`
 
-- [ ] **3. Rol personalizado con Python** — `scripts/custom_role.py`
+- [x] **3. Rol personalizado con Python** — `scripts/custom_role.py`
   - Comprobar: `gcloud iam roles describe vm_start_stop --project=gcp-lab-jona-01`
   - Esperado: `stage: GA` y `includedPermissions` con **exactamente 2**: `compute.instances.start` y `compute.instances.stop`
 
-- [ ] **4. VPC custom mode** — `terraform/network.tf`
+- [x] **4. VPC custom mode** — `terraform/network.tf`
   - Comprobar: `gcloud compute networks describe vpc-lab --format="value(x_gcloud_subnet_mode)"` → `CUSTOM` (no `AUTO`)
   - Y: `gcloud compute networks subnets list --filter="network:vpc-lab"` → **1 sola** subred, `subred-us-east1`, `10.10.0.0/24`, `us-east1`
 
