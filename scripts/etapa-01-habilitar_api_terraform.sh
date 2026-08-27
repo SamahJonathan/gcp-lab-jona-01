@@ -1,4 +1,4 @@
-terraform -chdir=terraform fmt #ordena indentacion en los tf 
+ 
 
 # terraform -chdir=terraform init      # descarga el provider
 # terraform -chdir=terraform fmt       # ordena la indentacion

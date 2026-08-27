@@ -37,7 +37,7 @@ flowchart TD
     main -->|"15 recursos"| prov
     prov -->|"llamadas a la API"| gcp
 
-    classDef nogit stroke-dasharray: 5 5
+    classDef nogit stroke:#888,stroke-width:2px,stroke-dasharray: 6 4
     class tfvars,adc nogit
 ```
 
@@ -55,7 +55,7 @@ flowchart LR
     pregunta -->|sí| apply["apply<br/><b>escribe en GCP</b>"]
     apply --> state[("terraform.tfstate")]
 
-    classDef escribe fill:#f9d5d5,stroke:#c33
+    classDef escribe fill:#f9d5d5,stroke:#c33,stroke-width:2px,color:#000
     class apply escribe
 ```
 

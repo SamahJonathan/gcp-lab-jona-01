@@ -46,9 +46,33 @@ flowchart TD
     policy --> b3 --> m4
     policy -.-> etag
 
-    classDef malo fill:#f9d5d5,stroke:#c33
+    classDef malo fill:#f9d5d5,stroke:#c33,stroke-width:2px,color:#000
     class b2,m2 malo
 ```
+
+#### Por qué se llama *binding*
+
+Se traduce como **vinculación** o **enlace**, aunque casi nadie lo traduce. Viene
+de *to bind*, atar, y esa imagen es la buena: un binding no es una caja que
+contiene cosas, es **el nudo** que ata un rol a unos miembros.
+
+```yaml
+- role: roles/compute.viewer          # un rol...
+  members:                            # ...atado a N miembros
+  - serviceAccount:deployer-sa@gcp-lab-jona-01.iam.gserviceaccount.com
+  - user:jona.samah@gmail.com
+```
+
+Eso es **un** binding: un nudo, con un rol en un extremo y una lista de
+identidades en el otro.
+
+De ahí el nombre del comando `add-iam-policy-binding`. No añade "un permiso a una
+cuenta": ata **un nudo más** a la política del proyecto. Y por eso la política es
+una lista de bindings y no una lista de usuarios — es la colección de todos los
+nudos atados a ese recurso.
+
+(La palabra significa lo mismo en programación: *data binding*, *key binding*.
+Siempre es "esto queda atado a aquello".)
 
 Por eso hace falta `--flatten="bindings[].members"` para filtrar: aplana esa
 estructura anidada a **una fila por miembro**, y entonces el `--filter` puede
@@ -117,6 +141,56 @@ El id (lo que va antes de la `@`) admite minúsculas, números y guiones, entre 
 En PowerShell, cada comando en **una sola línea**. El `\` del final de línea que
 usa el vídeo es sintaxis de bash y aquí no funciona.
 
+### Cómo se lee un comando de gcloud
+
+Todos siguen el mismo patrón:
+
+```
+gcloud  GRUPO  SUBGRUPO  VERBO  ARGUMENTO  --flags
+```
+
+El posicional (el que va sin `--`) es siempre el objeto sobre el que actúa el
+verbo. `--help` funciona a cualquier altura: `gcloud iam --help`,
+`gcloud iam service-accounts --help`, `gcloud iam service-accounts create --help`.
+
+#### Comando 1
+
+```
+gcloud  iam  service-accounts  create  deployer-sa  --display-name="Deployer SA"  --description="..."
+  │      │          │            │          │                │                          │
+  │      │          │            │          │                │                          └─ texto libre, para el que lo lea dentro de un año
+  │      │          │            │          │                └─ etiqueta visible en la consola web. Admite espacios y mayúsculas
+  │      │          │            │          └─ EL ID. Posicional (sin --). Minúsculas, números y guiones, 6-30 caracteres
+  │      │          │            └─ el verbo: create, delete, describe, list, update...
+  │      │          └─ el tipo de recurso, siempre en plural
+  │      └─ el producto: iam, compute, storage, run, sql, container...
+  └─ la CLI
+```
+
+El email no se escribe: GCP lo compone con el id y el proyecto →
+`deployer-sa@gcp-lab-jona-01.iam.gserviceaccount.com`.
+
+#### Comando 2
+
+```
+gcloud  projects  add-iam-policy-binding  gcp-lab-jona-01  --member="serviceAccount:deployer-sa@..."  --role="roles/compute.viewer"
+  │        │                │                    │                        │           │                        │
+  │        │                │                    │                        │           └─ el email completo, este sí entero
+  │        │                │                    │                        └─ el prefijo dice QUÉ TIPO de miembro es
+  │        │                │                    │                           user: / serviceAccount: / group: / domain:
+  │        │                │                    └─ SOBRE QUÉ recurso se aplica: el proyecto entero
+  │        │                └─ el verbo. Aquí no hay subgrupo: cuelga directo de projects
+  │        └─ el producto
+  └─ la CLI
+```
+
+El `--role` siempre lleva el prefijo `roles/`. Los predefinidos de Google van así
+(`roles/compute.viewer`); los personalizados del ejercicio 3 llevan la ruta
+completa (`projects/gcp-lab-jona-01/roles/vm_start_stop`).
+
+Asimetría a notar: en el comando 1 el posicional es **la cosa que creas**; en el
+2 es **el sitio** donde aplicas el cambio.
+
 ### `add-iam-policy-binding` vs `set-iam-policy`
 
 | | Qué hace | Riesgo |
@@ -158,23 +232,3 @@ Esperado: 1 fila con `Deployer SA` y `DISABLED: False`, y `roles/compute.viewer`
 como **único** rol.
 
 Coste de la etapa: 0. No hay nada que apagar.
-
-gcloud  iam  service-accounts  create  deployer-sa  --display-name="Deployer SA"  --description="..."
-  │      │          │            │          │                │                          │
-  │      │          │            │          │                │                          └─ texto libre, para el que lo lea dentro de un año
-  │      │          │            │          │                └─ etiqueta visible en la consola web. Admite espacios y mayúsculas
-  │      │          │            │          └─ EL ID. Posicional (sin --). Minúsculas, números y guiones, 6-30 caracteres
-  │      │          │            └─ el verbo: create, delete, describe, list, update...
-  │      │          └─ el tipo de recurso, siempre en plural
-  │      └─ el producto: iam, compute, storage, run, sql, container...
-  └─ la CLI
-
-gcloud  projects  add-iam-policy-binding  gcp-lab-jona-01  --member="serviceAccount:deployer-sa@..."  --role="roles/compute.viewer"
-  │        │                │                    │                        │           │                        │
-  │        │                │                    │                        │           └─ el email completo, este sí entero
-  │        │                │                    │                        └─ el prefijo dice QUÉ TIPO de miembro es
-  │        │                │                    │                           user: / serviceAccount: / group: / domain:
-  │        │                │                    └─ SOBRE QUÉ recurso se aplica: el proyecto entero
-  │        │                └─ el verbo. Aquí no hay subgrupo: cuelga directo de projects
-  │        └─ el producto
-  └─ la CLI
