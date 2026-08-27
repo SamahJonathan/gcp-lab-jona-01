@@ -162,6 +162,109 @@ está en la papelera, te dice el comando para sacarlo:
 gcloud iam roles undelete vm_start_stop --project=gcp-lab-jona-01
 ```
 
+## Las piezas del script
+
+El script tiene **dos funciones propias**. Todo lo demás son funciones prestadas
+de librerías que otra gente escribió.
+
+### `leer_project_id()`
+
+Devuelve el nombre del proyecto, `gcp-lab-jona-01`, leyéndolo de
+`terraform/terraform.tfvars`.
+
+Existe por la norma del laboratorio: el nombre del proyecto vive en un solo
+sitio y no se escribe a mano en ningún script. Hace tres cosas en orden:
+
+| Paso | Si falla |
+|---|---|
+| ¿Existe el archivo? | se para y avisa |
+| Buscar dentro la línea `project_id = "..."` | se para y avisa |
+| Devolver lo que hay entre comillas | — |
+
+Devuelve **solo el valor**, no la línea entera. De eso se encarga el paréntesis
+de la expresión regular: `"([^"]+)"` significa "quédate con lo de dentro de las
+comillas", y `.group(1)` lo recoge.
+
+### `main()`
+
+El guion de la película. No hace el trabajo, lo ordena:
+
+1. Pide el nombre del proyecto a la función anterior.
+2. Coge tu identidad del ordenador.
+3. Se conecta al servicio de IAM.
+4. Intenta crear el rol.
+5. Si Google se queja, decide qué hacer.
+6. Enseña el resultado.
+
+Devuelve un **número**, no un texto: `0` si todo fue bien, `1` si el rol estaba
+en la papelera. Es una convención de toda la vida en los sistemas operativos —
+cero es éxito, cualquier otro número es un problema. Sirve para que otro script
+pueda encadenarse detrás y saber si sigue o no.
+
+### Las funciones prestadas
+
+Para leer el archivo:
+
+| Función | Para qué |
+|---|---|
+| `Path(__file__).resolve()` | la ruta completa de este mismo script |
+| `.parent.parent` | sube dos carpetas: a `scripts/`, y de ahí a la raíz |
+| `RAIZ / "terraform" / "terraform.tfvars"` | pega trozos de ruta; la barra vale en Windows y en Linux |
+| `.exists()` | ¿está el archivo? |
+| `.read_text()` | devuelve todo el contenido como un texto |
+| `re.search()` | busca un patrón dentro de ese texto |
+| `sys.exit()` | corta el script en seco con un mensaje |
+
+Ese `.parent.parent` es lo que hace que el script funcione desde cualquier
+carpeta: no busca el `tfvars` "donde estés tú", sino a partir de dónde está él.
+
+Para hablar con Google:
+
+| Función | Para qué |
+|---|---|
+| `google.auth.default()` | busca tus credenciales ADC y te las da |
+| `discovery.build("iam", "v1", ...)` | se descarga el manual del servicio y fabrica las órdenes |
+| `.create()` | pide crear el rol |
+| `.get()` | pregunta cómo está un rol que ya existe |
+| `.patch()` | corrige campos sueltos de un rol existente |
+| `.execute()` | **manda de verdad la petición** |
+
+Cuidado con el último. `create()`, `get()` y `patch()` **no hacen nada por sí
+solas**: solo preparan el sobre. Hasta que no se llama a `.execute()` no sale
+nada hacia Google. Por eso todas las líneas terminan igual:
+
+```python
+roles.create(...).execute()
+```
+
+Si se olvidara el `.execute()`, el script correría sin dar error y sin crear
+nada. Es un fallo silencioso de los que cuesta ver.
+
+### La línea rara del final
+
+```python
+if __name__ == "__main__":
+    raise SystemExit(main())
+```
+
+Se lee así: *si me están ejecutando directamente, corre `main()` y termina con
+el número que devuelva*.
+
+El `if` está porque un archivo de Python se puede usar de dos formas:
+ejecutarlo, o importarlo desde otro script para reutilizar sus funciones. Sin
+esa línea, el simple hecho de importarlo crearía el rol sin que nadie lo
+hubiera pedido, que es lo último que quieres.
+
+Y `raise SystemExit(...)` convierte ese `0` o `1` en el código de salida real
+del proceso, el que ve PowerShell. Se puede comprobar justo después de lanzarlo:
+
+```powershell
+python scripts/custom_role.py
+$LASTEXITCODE
+```
+
+Sale `0` si terminó bien.
+
 ## Tres detalles del código
 
 **Se corrigen campos sueltos, no la ficha entera.** Cuando el script corrige un

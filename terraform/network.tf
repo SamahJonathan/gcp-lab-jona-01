@@ -5,7 +5,7 @@
 # se facturan.
 
 # -----------------------------------------------------------------------------
-# La VPC
+# La VPC (virtual private cloud) es la red de nivel superior. En GCP se puede crear en modo CUSTOM o AUTO.
 # -----------------------------------------------------------------------------
 resource "google_compute_network" "vpc_lab" {
   # El nombre que viaja a GCP lleva guion; la etiqueta local de Terraform,
