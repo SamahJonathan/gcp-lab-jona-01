@@ -417,8 +417,8 @@ Fíjate en la caja roja de abajo: **el paquete se tira sin contestar nada**. Eso
 tiene una consecuencia práctica que te va a pasar en la etapa 6.
 
 Si el paquete fuera al puerto 80, para el que no hay regla, no recibirías un "no"
-rápido. **No recibirías nada**, y el navegador se quedaría cargando hasta que se
-cansa. Es distinto de un "conexión rechazada", que significa que el paquete sí
+rápido. **No recibirías nada**: el navegador se queda cargando y acaba en un
+`ERR_TIMED_OUT`. Es distinto de un "conexión rechazada", que significa que el paquete sí
 llegó a la máquina y allí no había nadie escuchando.
 
 | Síntoma | Qué suele ser |

@@ -84,7 +84,7 @@ Sin las tres, la casilla `[ ]` no se marca.
 
 ## Módulo 2 — Compute Engine · ⚠ empieza el coste
 
-- [ ] **6. VM con startup script** — `compute-engine/create-instance.sh` + `startup-script.sh`
+- [x] **6. VM con startup script** — `compute-engine/create-instance.sh` + `startup-script.sh`
   - Comprobar 1: `gcloud compute instances list --filter="name:servidor-web-1"` → `RUNNING` + IP externa
   - Comprobar 2: `(Invoke-WebRequest http://IP_EXTERNA).StatusCode` → **200**, con `Welcome to nginx` en el cuerpo
   - Medida real del ejercicio: **el nginx se instaló solo**, sin que entraras por SSH
