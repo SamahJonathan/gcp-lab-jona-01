@@ -24,7 +24,7 @@ o PowerShell se come lo que va detras del punto.
 
 ## Estado
 
-Etapas 1 a 5 del `plan.md` hechas y verificadas en GCP:
+Etapas 1 a 6 del `plan.md` hechas y verificadas en GCP:
 
 - **Etapa 1** — `terraform/main.tf` habilita 15 APIs. El `apply` esta hecho: el estado
   tiene 15 `google_project_service`.
@@ -36,21 +36,25 @@ Etapas 1 a 5 del `plan.md` hechas y verificadas en GCP:
 - **Etapa 5** — regla de firewall `ssh-custom` en `vpc-lab`: ingress, `tcp:22`, origen
   `0.0.0.0/0`, destino el network tag `web-server`. Creada con `gcloud`, no con
   Terraform, asi que **no esta en el estado** y se borra con `gcloud`.
+- **Etapa 5 bis** — regla `http-custom`, igual pero `tcp:80`. Hizo falta para la etapa 6
+  y **tambien para la 7**: por el 80 pasan los sondeos de salud de Google.
+- **Etapa 6** — `servidor-web-1` con nginx instalado por un startup script, verificada
+  con un 200 y `Welcome to nginx`. **La VM se borro al cerrar la sesion**; el comando
+  para rehacerla esta en `compute-engine/create-instance.sh`.
 
-Pendiente inmediato: la **etapa 6**, la primera VM. Los entregables ya estan escritos
-(`compute-engine/create-instance.sh` y `compute-engine/startup-script.sh`), pero el
-comando no se ha lanzado y en GCP todavia no hay ninguna maquina.
+Pendiente inmediato: la **etapa 7**, el MIG. `terraform/mig.tf` ya esta escrito y el
+`plan` da `3 to add, 0 to change, 0 to destroy` (plantilla, health check y grupo), pero
+**el apply no se ha lanzado**: en GCP no hay ninguna maquina.
 
-Antes de dar por buena la etapa 6 hace falta una segunda regla de firewall,
-`http-custom`, que abra `tcp:80` al mismo tag: `ssh-custom` solo abre el 22 y el nginx
-no responderia desde el navegador. El comando esta al final de
-`scripts/etapa-05-firewall-network-tags.sh`.
+En GCP ahora mismo no hay ni un recurso que se facture. Lo que queda son las 15 APIs,
+`deployer-sa`, el rol `vm_start_stop`, la red con su subred y las dos reglas de firewall.
 
 El repo tiene remoto `origin` en github.com/SamahJonathan/gcp-lab-jona-01 y varios commits.
 
-**A partir de la etapa 6 empieza el coste.** Hasta la 5 no hay en GCP ni un recurso que
-se facture: APIs, una identidad, un rol, una red y una regla de firewall son gratis. Una
-VM encendida no lo es, y su disco se sigue pagando aunque la pares.
+**Desde la etapa 6 el coste es real, y la 7 es peor.** Una VM encendida se paga, y su
+disco se sigue pagando aunque la pares. El MIG son 2 VMs a la vez, y ademas **borrar sus
+instancias a mano no apaga nada**: el grupo las repone. Se apaga bajando `target_size` a
+0 o destruyendo el grupo con Terraform.
 
 ## Convenciones
 

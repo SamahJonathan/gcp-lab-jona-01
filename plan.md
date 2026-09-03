@@ -90,7 +90,7 @@ Sin las tres, la casilla `[ ]` no se marca.
   - Medida real del ejercicio: **el nginx se instaló solo**, sin que entraras por SSH
   - ⚠ La IPv4 externa se cobra **aunque pares la VM**
 
-- [ ] **7. MIG** — `terraform/mig.tf`
+- [x] **7. MIG** — `terraform/mig.tf`
   - Comprobar: `gcloud compute instance-groups managed list-instances app-mig --region=us-east1` → **2 instancias**, `RUNNING` y `HEALTHY`
   - Prueba de auto-healing (el ejercicio de verdad): borra una instancia a mano, vuelve a listar a los 2 min → siguen siendo **2**
   - ⚠ 2 VMs encendidas: bajar a 0 o destruir al cerrar la sesión
