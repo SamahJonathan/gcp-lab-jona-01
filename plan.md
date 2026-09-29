@@ -95,11 +95,11 @@ Sin las tres, la casilla `[ ]` no se marca.
   - Prueba de auto-healing (el ejercicio de verdad): borra una instancia a mano, vuelve a listar a los 2 min → siguen siendo **2**
   - ⚠ 2 VMs encendidas: bajar a 0 o destruir al cerrar la sesión
 
-- [ ] **8. Snapshots con Python** — `compute-engine/backup_vm.py`
+- [x] **8. Snapshots con Python** — `compute-engine/backup_vm.py`
   - Comprobar: `gcloud compute snapshots list --format="table(name,status,diskSizeGb,storageBytes)"` → `READY` y `storageBytes > 0`
   - Segunda medida: lanza el script otra vez → el 2.º snapshot tarda mucho menos y ocupa mucho menos. **Son incrementales**
 
-- [ ] **9. OS Login + SSH** — `compute-engine/os-login-ssh.sh`
+- [x] **9. OS Login + SSH** — `compute-engine/os-login-ssh.sh`
   - Comprobar 1: `gcloud compute project-info describe --format="value(commonInstanceMetadata.items)"` contiene `enable-oslogin` = `TRUE`
   - Comprobar 2: `gcloud compute ssh servidor-web-1 --zone=us-east1-b --command="whoami"` → devuelve `jona_samah_gmail_com`, un usuario derivado de tu cuenta de Google (**no** `jona` ni `root`). Esa es la prueba de que OS Login manda
 
