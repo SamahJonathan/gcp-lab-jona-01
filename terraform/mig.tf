@@ -104,7 +104,14 @@ resource "google_compute_region_instance_group_manager" "app_mig" {
   base_instance_name = "app"
 
   # EL NUMERO QUE CUESTA DINERO. Bajarlo a 0 apaga el grupo sin destruirlo.
-  target_size = 2
+  #
+  # A 0 desde que la etapa 7 quedo cerrada (29-09-2026). El grupo, la plantilla y
+  # el health check son gratis: lo que se factura son las instancias. Dejarlo en
+  # 2 hacia que cualquier "terraform apply" de una etapa posterior levantara dos
+  # VMs sin que nadie lo pidiera.
+  #
+  # Para repetir el ejercicio 7: subirlo a 2, aplicar, y volver a 0 al terminar.
+  target_size = 0
 
   version {
     instance_template = google_compute_instance_template.app_template.id

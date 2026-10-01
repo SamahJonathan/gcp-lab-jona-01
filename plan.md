@@ -107,12 +107,12 @@ Sin las tres, la casilla `[ ]` no se marca.
 
 ## Módulo 3 — Contenedores · ⚠⚠ el módulo más caro
 
-- [ ] **10. GKE con Terraform** — `terraform/gke.tf`
+- [x] **10. GKE con Terraform** — `terraform/gke.tf`
   - Comprobar: `gcloud container clusters list --format="table(name,status,currentNodeCount,location)"` → `RUNNING` con el nº de nodos esperado
   - Tarda ~5 min (en el vídeo, 5:17). Si a los 10 min no está `RUNNING`, algo va mal
   - ⚠⚠ Control plane ~0,10 USD/h + nodos, **24/7**. Es lo que se quedó una semana encendido en el proyecto anterior
 
-- [ ] **11. Deployment + LoadBalancer** — `gke/create-services.sh` (**desde Cloud Shell**)
+- [x] **11. Deployment + LoadBalancer** — `gke/create-services.sh` (**desde Cloud Shell**)
   - Comprobar 1: `kubectl get pods` → pod `Running`, `READY 1/1`
   - Comprobar 2: `kubectl get svc nginx-app` → la `EXTERNAL-IP` deja de ser `<pending>` (1-2 min)
   - Comprobar 3: esa IP en el navegador → `Welcome to nginx`
