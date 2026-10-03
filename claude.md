@@ -10,51 +10,69 @@ Responde siempre en espanol.
 |---|---|
 | Proyecto GCP | `gcp-lab-jona-01` (numero 82408893781) |
 | Cuenta | jona.samah@gmail.com |
-| Facturacion | `01D9FA-58E398-5AA6F7`, prueba gratuita de 300 USD **compartida** con el proyecto del curso |
+| Facturacion | `01D9FA-58E398-5AA6F7`, prueba gratuita de 300 USD |
 | Region / zona | `us-east1` / `us-east1-b` |
-| Perfil de gcloud | `lab` (el del curso es `default`) |
+| Zona del cluster GKE | `us-east1-c` (variable `gke_zone`, aparte a proposito) |
+| Perfil de gcloud | `lab` (el `default` apuntaba al proyecto del curso, ya borrado) |
 
-Herramientas en este PC: gcloud 581, Terraform 1.15.8, Python 3.12.
-**No hay kubectl** y no se puede instalar con `gcloud components install`: el SDK esta en
-`C:\Program Files (x86)` y hace falta ser administrador.
+Herramientas en este PC, verificadas el 3 de octubre de 2026:
 
-Es Windows con PowerShell: los argumentos tipo `-target=recurso.nombre` **hay que
-entrecomillarlos** (`terraform destroy '-target=google_container_cluster.primary'`),
-o PowerShell se come lo que va detras del punto.
+| Herramienta | Version |
+|---|---|
+| gcloud | 581.0.0 |
+| Terraform | 1.15.8 |
+| Python | 3.12.10 |
+| kubectl | v1.37.1, en `C:\Users\Joony\bin` (gana en el PATH; el del SDK tambien esta) |
+| gke-gcloud-auth-plugin | v0.1.0-gke.3, en el SDK |
+
+**Ya se puede usar Kubernetes desde este PC**; hasta el 3 de octubre no habia kubectl y
+las etapas 10 y 11 se hicieron desde Cloud Shell. Lo que sigue necesitando una ventana de
+PowerShell **como administrador** es cualquier `gcloud components ...`, porque el SDK esta
+en `C:\Program Files (x86)`.
+
+Es Windows con **PowerShell 5.1** (el antiguo), y de ahi tres cosas:
+
+- Los argumentos tipo `-target=recurso.nombre` **hay que entrecomillarlos**
+  (`terraform destroy '-target=google_container_cluster.primary'`), o PowerShell parte el
+  argumento en el punto.
+- En los `--format` conviene usar **comillas simples**: al pegar con dobles, la consola a
+  veces se queda en `>>` esperando (se sale con `Ctrl+C`).
+- No existe `&&`: los comandos van de uno en uno.
+
+Pendiente opcional: instalar PowerShell 7 (`winget install --id 9MZ1SNWT0N5D --source
+msstore`, sin admin), que arregla las tres.
 
 ## Estado
 
-Etapas 1 a 6 del `plan.md` hechas y verificadas en GCP:
+Etapas **1 a 12** del `plan.md` cerradas, cada una con su comprobacion verificada, sus
+entregables pusheados y sus recursos destruidos. Los apuntes de cada etapa estan en `docs/`.
 
-- **Etapa 1** — `terraform/main.tf` habilita 15 APIs. El `apply` esta hecho: el estado
-  tiene 15 `google_project_service`.
-- **Etapa 2** — service account `deployer-sa` con `roles/compute.viewer`, y solo ese.
-- **Etapa 3** — rol personalizado `vm_start_stop` con dos permisos:
-  `compute.instances.start` y `compute.instances.stop`.
-- **Etapa 4** — `terraform/network.tf`: VPC `vpc-lab` en modo CUSTOM y una sola subred,
-  `subred-us-east1` con `10.10.0.0/24`.
-- **Etapa 5** — regla de firewall `ssh-custom` en `vpc-lab`: ingress, `tcp:22`, origen
-  `0.0.0.0/0`, destino el network tag `web-server`. Creada con `gcloud`, no con
-  Terraform, asi que **no esta en el estado** y se borra con `gcloud`.
-- **Etapa 5 bis** — regla `http-custom`, igual pero `tcp:80`. Hizo falta para la etapa 6
-  y **tambien para la 7**: por el 80 pasan los sondeos de salud de Google.
-- **Etapa 6** — `servidor-web-1` con nginx instalado por un startup script, verificada
-  con un 200 y `Welcome to nginx`. **La VM se borro al cerrar la sesion**; el comando
-  para rehacerla esta en `compute-engine/create-instance.sh`.
+La siguiente es la **13**, Cloud Function gen2 (`cloud-run/funcion-prueba/`).
 
-Pendiente inmediato: la **etapa 7**, el MIG. `terraform/mig.tf` ya esta escrito y el
-`plan` da `3 to add, 0 to change, 0 to destroy` (plantilla, health check y grupo), pero
-**el apply no se ha lanzado**: en GCP no hay ninguna maquina.
+En GCP ahora mismo lo unico desplegado es el servicio de Cloud Run `hello-lab`
+(etapa 12), que **no cuesta nada sin trafico**: escala a cero. No hay instancias, discos,
+clusteres ni balanceadores. Lo demas que queda son las APIs, `deployer-sa`, el rol
+`vm_start_stop`, la red `vpc-lab` con su subred, las dos reglas de firewall, dos snapshots
+y la metadata `enable-oslogin=TRUE`.
 
-En GCP ahora mismo no hay ni un recurso que se facture. Lo que queda son las 15 APIs,
-`deployer-sa`, el rol `vm_start_stop`, la red con su subred y las dos reglas de firewall.
+El MIG de la etapa 7 esta declarado con **`target_size = 0`** a proposito: el grupo, la
+plantilla y el health check son gratis, y asi ningun `apply` de una etapa posterior levanta
+dos VMs sin que nadie lo pida.
 
-El repo tiene remoto `origin` en github.com/SamahJonathan/gcp-lab-jona-01 y varios commits.
+## Lo que costo tiempo y conviene no repetir
 
-**Desde la etapa 6 el coste es real, y la 7 es peor.** Una VM encendida se paga, y su
-disco se sigue pagando aunque la pares. El MIG son 2 VMs a la vez, y ademas **borrar sus
-instancias a mano no apaga nada**: el grupo las repone. Se apaga bajando `target_size` a
-0 o destruyendo el grupo con Terraform.
+- **Un recurso creado fuera del estado.** Si un `apply` muere a medias (corte de red, por
+  ejemplo), el recurso puede existir en GCP y no estar en el estado. Lo primero es
+  **comprobar que se creo de verdad**, no reintentar: se arregla con `terraform import`.
+  Y despues, el `plan` tiene que salir limpio; si no, queda drift (al cluster le quedo
+  `deletion_protection = true`, que habria hecho fallar el destroy).
+- **Zona sin capacidad.** `us-east1-b` se quedo sin `e2-medium` libres. No es un error de
+  configuracion, es inventario de Google, y el cluster fallido **queda en estado ERROR**,
+  listado y facturando, hasta que se destruye.
+- **El orden al apagar GKE**: primero `kubectl delete service`, despues el cluster. Al
+  reves, el balanceador queda huerfano facturando.
+- **Las cosas se quedan encendidas.** El MIG estuvo 26 dias arriba y el cluster casi 3
+  horas, con el aviso ya escrito en los dos `.tf`. El apagado se hace **el mismo dia**.
 
 ## Convenciones
 
@@ -62,17 +80,18 @@ instancias a mano no apaga nada**: el grupo las repone. Se apaga bajando `target
   Nunca escribirlo a mano en un `.tf` o en un script.
 - Nombres de recursos que viajan a GCP: minusculas, numeros y `-`. El guion bajo solo
   vale para las etiquetas locales de Terraform.
-- Comandos de `gcloud` que crean o borran algo: guardarlos comentados con `#` en `scripts/`,
-  como cuaderno de copiar y pegar, no como script ejecutable.
+- Comandos de `gcloud` que crean o borran algo: guardarlos comentados con `#` en un cuaderno
+  (`scripts/`, o la carpeta del recurso), no como script ejecutable. Los `.py` si se ejecutan.
+- Claude escribe los `.tf`, los `.sh` y los apuntes; los `apply` y los `gcloud` los lanza
+  Jonathan, salvo que pida otra cosa.
 - Avisar del coste antes de crear recursos que no paran solos (clusteres, balanceadores,
-  discos, VMs). El proyecto anterior se dejo un cluster GKE encendido una semana.
-- Mensajes de commit: una linea, formato `curso-NN: descripcion corta`. Con guion, no punto.
-  **Sin trailer `Co-Authored-By`**: es un repo de estudio personal y los primeros commits
-  no lo llevan.
+  discos, VMs).
+- Mensajes de commit: **una linea**, formato `curso-NN: descripcion corta`. Con guion, no
+  punto. **Sin trailer `Co-Authored-By`**: es un repo de estudio personal.
 
 ## De donde viene esto
 
-El proyecto del curso esta en `..\GCP_proyecto\GCP_proyecto_muestra` (repo
-github.com/SamahJonathan/GCP_proyecto_muestra). Ahi estan los apuntes de los modulos 0 a 4
-en `docs/`, que valen como referencia. De ese curso quedan pendientes los ejercicios 14 a 20;
-este laboratorio es aparte y no los sustituye.
+El primer intento del curso esta en `..\GCP_proyecto\GCP_proyecto_muestra` (repo
+github.com/SamahJonathan/GCP_proyecto_muestra). Llego al ejercicio 13 y **su proyecto de GCP
+se borro el 29 de septiembre de 2026**; el repo sigue, y sus apuntes de los modulos 0 a 4
+valen como referencia de la primera vuelta.
