@@ -1,0 +1,11 @@
+# Dependencias de la funcion.
+#
+# El video deja este archivo VACIO y funciona, porque el buildpack de Google
+# instala functions-framework por su cuenta. Aqui se declara igualmente: lo que
+# el codigo importa debe estar escrito, o el dia que Google cambie su buildpack
+# el despliegue se rompe sin que nadie haya tocado nada.
+#
+# El ~= deja subir parches y versiones menores (3.9, 3.10...) pero no salta a la
+# 4.x, que podria traer cambios incompatibles. Es la misma idea que el
+# version = "~> 6.0" del proveedor de Google en terraform/main.tf.
+functions-framework~=3.8

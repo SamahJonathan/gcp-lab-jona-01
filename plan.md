@@ -123,7 +123,7 @@ Sin las tres, la casilla `[ ]` no se marca.
   - Esperado: **200** y `Hello, world!`, sobre **https** y sin haber tocado ningún certificado
   - Coste ~0: scale to zero
 
-- [ ] **13. Cloud Function gen2** — `cloud-run/funcion-prueba/`
+- [x] **13. Cloud Function gen2** — `cloud-run/funcion-prueba/`
   - Comprobar: `gcloud functions describe funcion-prueba --gen2 --region=us-east1 --format="value(state)"` → `ACTIVE`, y su URL devuelve **200** con tu texto
   - Segunda medida: edita `main.py`, redespliega, vuelve a llamar → el texto **cambia**. Ciclo de vida completo
 
