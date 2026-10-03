@@ -118,7 +118,7 @@ Sin las tres, la casilla `[ ]` no se marca.
   - Comprobar 3: esa IP en el navegador → `Welcome to nginx`
   - ⚠ El LoadBalancer también cuesta. **Cluster destruido el mismo día**
 
-- [ ] **12. Cloud Run** — `cloud-run/deploy.sh`
+- [x] **12. Cloud Run** — `cloud-run/deploy.sh`
   - Comprobar: `gcloud run services list --format="value(URL)"`, luego `Invoke-WebRequest` a esa URL
   - Esperado: **200** y `Hello, world!`, sobre **https** y sin haber tocado ningún certificado
   - Coste ~0: scale to zero
